@@ -32,6 +32,8 @@ public class ItemsControllers {
         return "newForm"
     }
 
+
+
     @PostMapping("/addNew")
     fun addNewAction(
         @ModelAttribute item:Item,
@@ -47,6 +49,19 @@ public class ItemsControllers {
 
         }
         attrs.addFlashAttribute("msg", msg)
+        return RedirectView("/")
+    }
+
+    @GetMapping("/delete/{nom}")
+    fun deleteAction(
+            @PathVariable("nom") nom:String,
+            @SessionAttribute("items") items:HashSet<Item>,
+            attrs: RedirectAttributes
+    ):RedirectView{
+        if(items.remove(Item(nom))){
+            attrs.addFlashAttribute("msg",
+                    UiMessage.success("Suppression", "$nom supprimé."))
+        }
         return RedirectView("/")
     }
 }

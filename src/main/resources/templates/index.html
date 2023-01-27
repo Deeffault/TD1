@@ -6,7 +6,11 @@
 {{/msg}}
 <ul>
     {{#items}}
-        <li>{{nom}}</li>
+        <li>{{nom}} <a href="/delete/{{nom}}" class="ui circular red basic mini icon button">
+            <i class="ui remove icon"></i>
+        </a>
+        </li>
     {{/items}}
+
 </ul>
 {{> include/footer}}
