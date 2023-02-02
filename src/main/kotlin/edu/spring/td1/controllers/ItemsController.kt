@@ -1,6 +1,6 @@
 package edu.spring.td1.controllers;
 
-import edu.spring.td1.models.Item
+import edu.spring.td1.models.Category
 import edu.spring.td1.services.UiMessage
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*
@@ -8,16 +8,21 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 import org.springframework.web.servlet.view.RedirectView
 
 @Controller
-@SessionAttributes("items")
+@SessionAttributes("categories")
 public class ItemsControllers {
 
-    @get:ModelAttribute("items")
-    val items: Set<Item>
+    private fun getCategoryByLibelle(libelle:String,categories:Set<Category>):Category?=categories.find { it.libelle==libelle }
+
+    @get:ModelAttribute("categories")
+    val categories: Set<Category>
         get() {
 
-            var elements = HashSet<Item>()
-            elements.add(Item("Foo"))
-            return elements
+            val categories = HashSet<Category>()
+            val cat = Category("Foo")
+            cat.addAll("a", "b", "c")
+            //categories.add(Category("Foo"))
+            categories.add(cat)
+            return categories
         }
 
     @RequestMapping("/")
@@ -27,25 +32,27 @@ public class ItemsControllers {
         return "index"
     }
 
-    @GetMapping("/new")
-    fun newAction():String{
+    @GetMapping("/new/{categorie}")
+    fun newAction(@PathVariable categorie:String):String{
         return "newForm"
     }
 
 
 
-    @PostMapping("/addNew")
+    @PostMapping("/addNew/{categorie}")
     fun addNewAction(
-        @ModelAttribute item:Item,
-        @SessionAttribute("items") items:HashSet<Item>,
-        attrs: RedirectAttributes
+            @ModelAttribute("nom") item:String,
+            @PathVariable("categorie") libelle: String,
+            @SessionAttribute("categories") categories:HashSet<Category>,
+            attrs: RedirectAttributes
     ):RedirectView{
+        val categorie=getCategoryByLibelle(libelle,categories)
         var msg:UiMessage.Message
-        if(items.add(item)){
-            msg= UiMessage.success("Ajout", "{$item.nom} ajouté aux items.")
+        if(categorie?.add(item)?:false){
+            msg= UiMessage.success("Ajout", "{$item.nom} ajouté aux items de la catégorie $libelle.")
 
         }else{
-            msg=UiMessage.error("Ajout", "${item.nom} existe déjà !")
+            msg=UiMessage.error("Ajout", "$item existe déjà !")
 
         }
         attrs.addFlashAttribute("msg", msg)
@@ -55,15 +62,15 @@ public class ItemsControllers {
     @GetMapping("/delete/{nom}")
     fun deleteAction(
             @PathVariable("nom") nom:String,
-            @SessionAttribute("items") items:HashSet<Item>,
+            @SessionAttribute("categories") items:HashSet<Category>,
             attrs: RedirectAttributes
     ):RedirectView{
-        if(items.remove(Item(nom))){
+        if(items.remove(Category(nom))){
             attrs.addFlashAttribute("msg",
                     UiMessage.success("Suppression", "$nom supprimé."))
         }
         return RedirectView("/")
     }
+
+
 }
-
-
